@@ -1,170 +1,113 @@
+// === FIREBASE CONFIG === //
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+import { 
+  getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBjR7pnvulb1niEe_nFf8nWGT6YZ4ckue4",
+  authDomain: "airfix-control.firebaseapp.com",
+  projectId: "airfix-control",
+  storageBucket: "airfix-control.firebasestorage.app",
+  messagingSenderId: "111362837485",
+  appId: "1:111362837485:web:7e1d29a0e834bd5e2235e4",
+  measurementId: "G-HNTWQJ7V8L"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// === FUNCIONES GENERALES DE MÓDULOS === //
 function mostrarModulo(modulo) {
-  const contenido = document.getElementById("contenido");
-  let html = "";
+  const modulos = ["stock", "caja", "reparaciones", "clientes", "deudores", "ventas", "reportes"];
+  modulos.forEach(m => {
+    const seccion = document.getElementById(`modulo-${m}`);
+    if (seccion) seccion.style.display = "none";
+  });
 
-  switch (modulo) {
-    case "stock":
-      html = "<h2>📱 Módulo Stock</h2><p>Aquí podrás gestionar celulares, repuestos y accesorios.</p>";
-      break;
-    case "caja":
-      html = "<h2>💰 Módulo Caja</h2><p>Control de ingresos, egresos y flujo de caja.</p>";
-      break;
-    case "deudores":
-      html = "<h2>📋 Módulo Deudores</h2><p>Lista de clientes con deudas pendientes.</p>";
-      break;
-    case "reparaciones":
-      html = "<h2>🔧 Módulo Reparaciones</h2><p>Registro y seguimiento de equipos en reparación.</p>";
-      break;
-    case "clientes":
-      html = "<h2>👤 Módulo Clientes</h2><p>Base de datos de clientes con historial.</p>";
-      break;
-    case "ventas":
-      html = "<h2>🛒 Módulo Ventas</h2><p>Registro de ventas y facturación.</p>";
-      break;
-    case "reportes":
-      html = "<h2>📊 Módulo Reportes</h2><p>Estadísticas de ventas, caja y stock.</p>";
-      break;
-    case "garantias":
-      html = "<h2>📜 Módulo Garantías</h2><p>Control de garantías de equipos vendidos y reparados.</p>";
-      break;
-    default:
-      html = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
-  }
-
-  contenido.innerHTML = html;
-}
-
-
-let stock = [];
-
-function mostrarModulo(modulo) {
-  const contenido = document.getElementById("contenido");
-  const modStock = document.getElementById("modulo-stock");
-
-  if (modStock) modStock.style.display = "none"; // ocultamos stock
-
-  switch (modulo) {
-    case "stock":
-      if (modStock) modStock.style.display = "block";
-      break;
-    default:
-      contenido.innerHTML = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
+  const activo = document.getElementById(`modulo-${modulo}`);
+  if (activo) {
+    activo.style.display = "block";
+    if (modulo === "reportes") mostrarReportes();
   }
 }
 
-// Manejo del formulario de stock
-document.addEventListener("DOMContentLoaded", () => {
-  const formStock = document.getElementById("formStock");
+// ================= STOCK ================= //
+async function agregarStock(marca, modelo, imei, precio) {
+  await addDoc(collection(db, "stock"), { marca, modelo, imei, precio });
+  renderStock();
+}
+
+async function eliminarStock(id) {
+  await deleteDoc(doc(db, "stock", id));
+  renderStock();
+}
+
+async function renderStock() {
   const tablaStock = document.querySelector("#tablaStock tbody");
-
-  if (formStock) {
-    formStock.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const marca = document.getElementById("marca").value;
-      const modelo = document.getElementById("modelo").value;
-      const imei = document.getElementById("imei").value;
-      const precio = document.getElementById("precio").value;
-
-      const celular = { id: Date.now(), marca, modelo, imei, precio };
-      stock.push(celular);
-
-      formStock.reset();
-      renderStock(tablaStock);
-    });
-  }
-});
-
-// Renderizar tabla de stock
-function renderStock(tablaStock) {
   tablaStock.innerHTML = "";
-  stock.forEach((celular) => {
+  const snapshot = await getDocs(collection(db, "stock"));
+  snapshot.forEach(docu => {
+    const cel = docu.data();
     const fila = document.createElement("tr");
     fila.innerHTML = `
-      <td>${celular.marca}</td>
-      <td>${celular.modelo}</td>
-      <td>${celular.imei}</td>
-      <td>$${celular.precio}</td>
-      <td>
-        <button onclick="eliminarCelular(${celular.id})">❌ Eliminar</button>
-      </td>
+      <td>${cel.marca}</td>
+      <td>${cel.modelo}</td>
+      <td>${cel.imei}</td>
+      <td>$${cel.precio}</td>
+      <td><button onclick="eliminarStock('${docu.id}')">❌ Eliminar</button></td>
     `;
     tablaStock.appendChild(fila);
   });
 }
 
-function eliminarCelular(id) {
-  stock = stock.filter(cel => cel.id !== id);
-  const tablaStock = document.querySelector("#tablaStock tbody");
-  renderStock(tablaStock);
-}
-
-let movimientos = [];
-
-function mostrarModulo(modulo) {
-  const modStock = document.getElementById("modulo-stock");
-  const modCaja = document.getElementById("modulo-caja");
-  const contenido = document.getElementById("contenido");
-
-  if (modStock) modStock.style.display = "none";
-  if (modCaja) modCaja.style.display = "none";
-
-  switch (modulo) {
-    case "stock":
-      if (modStock) modStock.style.display = "block";
-      break;
-    case "caja":
-      if (modCaja) modCaja.style.display = "block";
-      break;
-    default:
-      contenido.innerHTML = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
-  }
-}
-
-// Manejo de formulario de caja
+// Formulario Stock
 document.addEventListener("DOMContentLoaded", () => {
-  const formCaja = document.getElementById("formCaja");
-  const tablaCaja = document.querySelector("#tablaCaja tbody");
-
-  if (formCaja) {
-    formCaja.addEventListener("submit", (e) => {
+  const formStock = document.getElementById("formStock");
+  if (formStock) {
+    formStock.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const tipo = document.getElementById("tipo").value;
-      const descripcion = document.getElementById("descripcion").value;
-      const monto = parseFloat(document.getElementById("monto").value);
-
-      const movimiento = { id: Date.now(), tipo, descripcion, monto };
-      movimientos.push(movimiento);
-
-      formCaja.reset();
-      renderCaja(tablaCaja);
+      const marca = document.getElementById("marca").value;
+      const modelo = document.getElementById("modelo").value;
+      const imei = document.getElementById("imei").value;
+      const precio = parseFloat(document.getElementById("precio").value);
+      await agregarStock(marca, modelo, imei, precio);
+      formStock.reset();
     });
   }
+  renderStock();
 });
 
-// Renderizar tabla de caja y calcular balance
-function renderCaja(tablaCaja) {
+// ================= CAJA ================= //
+async function agregarMovimiento(tipo, descripcion, monto) {
+  await addDoc(collection(db, "caja"), { tipo, descripcion, monto });
+  renderCaja();
+}
+
+async function eliminarMovimiento(id) {
+  await deleteDoc(doc(db, "caja", id));
+  renderCaja();
+}
+
+async function renderCaja() {
+  const tablaCaja = document.querySelector("#tablaCaja tbody");
   tablaCaja.innerHTML = "";
+  let totalIngresos = 0, totalEgresos = 0;
 
-  let totalIngresos = 0;
-  let totalEgresos = 0;
-
-  movimientos.forEach((mov) => {
+  const snapshot = await getDocs(collection(db, "caja"));
+  snapshot.forEach(docu => {
+    const mov = docu.data();
     const fila = document.createElement("tr");
     fila.innerHTML = `
       <td>${mov.tipo}</td>
       <td>${mov.descripcion}</td>
       <td>$${mov.monto}</td>
-      <td><button onclick="eliminarMovimiento(${mov.id})">❌ Eliminar</button></td>
+      <td><button onclick="eliminarMovimiento('${docu.id}')">❌ Eliminar</button></td>
     `;
     tablaCaja.appendChild(fila);
-
-    if (mov.tipo === "ingreso") {
-      totalIngresos += mov.monto;
-    } else {
-      totalEgresos += mov.monto;
-    }
+    if (mov.tipo === "ingreso") totalIngresos += mov.monto;
+    else totalEgresos += mov.monto;
   });
 
   document.getElementById("totalIngresos").innerText = `$${totalIngresos}`;
@@ -172,79 +115,45 @@ function renderCaja(tablaCaja) {
   document.getElementById("balance").innerText = `$${totalIngresos - totalEgresos}`;
 }
 
-function eliminarMovimiento(id) {
-  movimientos = movimientos.filter(mov => mov.id !== id);
-  const tablaCaja = document.querySelector("#tablaCaja tbody");
-  renderCaja(tablaCaja);
-}
-
-let reparaciones = [];
-
-function mostrarModulo(modulo) {
-  const modStock = document.getElementById("modulo-stock");
-  const modCaja = document.getElementById("modulo-caja");
-  const modReparaciones = document.getElementById("modulo-reparaciones");
-  const contenido = document.getElementById("contenido");
-
-  if (modStock) modStock.style.display = "none";
-  if (modCaja) modCaja.style.display = "none";
-  if (modReparaciones) modReparaciones.style.display = "none";
-
-  switch (modulo) {
-    case "stock":
-      if (modStock) modStock.style.display = "block";
-      break;
-    case "caja":
-      if (modCaja) modCaja.style.display = "block";
-      break;
-    case "reparaciones":
-      if (modReparaciones) modReparaciones.style.display = "block";
-      break;
-    default:
-      contenido.innerHTML = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
-  }
-}
-
-// Manejo de formulario de reparaciones
+// Formulario Caja
 document.addEventListener("DOMContentLoaded", () => {
-  const formReparacion = document.getElementById("formReparacion");
-  const tablaReparaciones = document.querySelector("#tablaReparaciones tbody");
-
-  if (formReparacion) {
-    formReparacion.addEventListener("submit", (e) => {
+  const formCaja = document.getElementById("formCaja");
+  if (formCaja) {
+    formCaja.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const cliente = document.getElementById("cliente").value;
-      const telefono = document.getElementById("telefono").value;
-      const marca = document.getElementById("marcaRep").value;
-      const modelo = document.getElementById("modeloRep").value;
-      const imei = document.getElementById("imeiRep").value;
-      const falla = document.getElementById("falla").value;
-      const estado = document.getElementById("estado").value;
-
-      const reparacion = { 
-        id: Date.now(), 
-        cliente, 
-        telefono, 
-        marca, 
-        modelo, 
-        imei, 
-        falla, 
-        estado 
-      };
-
-      reparaciones.push(reparacion);
-      formReparacion.reset();
-      renderReparaciones(tablaReparaciones);
+      const tipo = document.getElementById("tipo").value;
+      const descripcion = document.getElementById("descripcion").value;
+      const monto = parseFloat(document.getElementById("monto").value);
+      await agregarMovimiento(tipo, descripcion, monto);
+      formCaja.reset();
     });
   }
+  renderCaja();
 });
 
-// Renderizar tabla de reparaciones
-function renderReparaciones(tablaReparaciones) {
-  tablaReparaciones.innerHTML = "";
+// ================= REPARACIONES ================= //
+async function agregarReparacion(cliente, telefono, marca, modelo, imei, falla, estado) {
+  await addDoc(collection(db, "reparaciones"), { cliente, telefono, marca, modelo, imei, falla, estado });
+  renderReparaciones();
+}
 
-  reparaciones.forEach((rep) => {
+async function eliminarReparacion(id) {
+  await deleteDoc(doc(db, "reparaciones", id));
+  renderReparaciones();
+}
+
+async function cambiarEstadoReparacion(id, nuevoEstado) {
+  const ref = doc(db, "reparaciones", id);
+  await updateDoc(ref, { estado: nuevoEstado });
+  renderReparaciones();
+}
+
+async function renderReparaciones() {
+  const tabla = document.querySelector("#tablaReparaciones tbody");
+  tabla.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "reparaciones"));
+  snapshot.forEach(docu => {
+    const rep = docu.data();
     const fila = document.createElement("tr");
     fila.innerHTML = `
       <td>${rep.cliente}</td>
@@ -253,104 +162,56 @@ function renderReparaciones(tablaReparaciones) {
       <td>${rep.imei}</td>
       <td>${rep.falla}</td>
       <td>
-        <select onchange="cambiarEstado(${rep.id}, this.value)">
+        <select onchange="cambiarEstadoReparacion('${docu.id}', this.value)">
           <option value="pendiente" ${rep.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
           <option value="en proceso" ${rep.estado === "en proceso" ? "selected" : ""}>En proceso</option>
           <option value="finalizado" ${rep.estado === "finalizado" ? "selected" : ""}>Finalizado</option>
           <option value="entregado" ${rep.estado === "entregado" ? "selected" : ""}>Entregado</option>
         </select>
       </td>
-      <td>
-        <button onclick="eliminarReparacion(${rep.id})">❌ Eliminar</button>
-      </td>
+      <td><button onclick="eliminarReparacion('${docu.id}')">❌ Eliminar</button></td>
     `;
-    tablaReparaciones.appendChild(fila);
+    tabla.appendChild(fila);
   });
 }
 
-// Cambiar estado de reparación
-function cambiarEstado(id, nuevoEstado) {
-  const rep = reparaciones.find(r => r.id === id);
-  if (rep) {
-    rep.estado = nuevoEstado;
-  }
-}
-
-// Eliminar reparación
-function eliminarReparacion(id) {
-  reparaciones = reparaciones.filter(rep => rep.id !== id);
-  const tablaReparaciones = document.querySelector("#tablaReparaciones tbody");
-  renderReparaciones(tablaReparaciones);
-}
-
-let clientes = [];
-
-function mostrarModulo(modulo) {
-  const modStock = document.getElementById("modulo-stock");
-  const modCaja = document.getElementById("modulo-caja");
-  const modReparaciones = document.getElementById("modulo-reparaciones");
-  const modClientes = document.getElementById("modulo-clientes");
-  const contenido = document.getElementById("contenido");
-
-  if (modStock) modStock.style.display = "none";
-  if (modCaja) modCaja.style.display = "none";
-  if (modReparaciones) modReparaciones.style.display = "none";
-  if (modClientes) modClientes.style.display = "none";
-
-  switch (modulo) {
-    case "stock":
-      if (modStock) modStock.style.display = "block";
-      break;
-    case "caja":
-      if (modCaja) modCaja.style.display = "block";
-      break;
-    case "reparaciones":
-      if (modReparaciones) modReparaciones.style.display = "block";
-      break;
-    case "clientes":
-      if (modClientes) modClientes.style.display = "block";
-      break;
-    default:
-      contenido.innerHTML = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
-  }
-}
-
-// Manejo de formulario de clientes
+// Formulario Reparaciones
 document.addEventListener("DOMContentLoaded", () => {
-  const formCliente = document.getElementById("formCliente");
-  const tablaClientes = document.querySelector("#tablaClientes tbody");
-
-  if (formCliente) {
-    formCliente.addEventListener("submit", (e) => {
+  const formRep = document.getElementById("formReparacion");
+  if (formRep) {
+    formRep.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const nombre = document.getElementById("nombreCliente").value;
-      const dni = document.getElementById("dniCliente").value;
-      const telefono = document.getElementById("telefonoCliente").value;
-      const email = document.getElementById("emailCliente").value;
-      const direccion = document.getElementById("direccionCliente").value;
-
-      const cliente = {
-        id: Date.now(),
-        nombre,
-        dni,
-        telefono,
-        email,
-        direccion
-      };
-
-      clientes.push(cliente);
-      formCliente.reset();
-      renderClientes(tablaClientes);
+      const cliente = document.getElementById("cliente").value;
+      const telefono = document.getElementById("telefono").value;
+      const marca = document.getElementById("marcaRep").value;
+      const modelo = document.getElementById("modeloRep").value;
+      const imei = document.getElementById("imeiRep").value;
+      const falla = document.getElementById("falla").value;
+      const estado = document.getElementById("estado").value;
+      await agregarReparacion(cliente, telefono, marca, modelo, imei, falla, estado);
+      formRep.reset();
     });
   }
+  renderReparaciones();
 });
 
-// Renderizar tabla de clientes
-function renderClientes(tablaClientes) {
-  tablaClientes.innerHTML = "";
+// ================= CLIENTES ================= //
+async function agregarCliente(nombre, dni, telefono, email, direccion) {
+  await addDoc(collection(db, "clientes"), { nombre, dni, telefono, email, direccion });
+  renderClientes();
+}
 
-  clientes.forEach((cli) => {
+async function eliminarCliente(id) {
+  await deleteDoc(doc(db, "clientes", id));
+  renderClientes();
+}
+
+async function renderClientes() {
+  const tabla = document.querySelector("#tablaClientes tbody");
+  tabla.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "clientes"));
+  snapshot.forEach(docu => {
+    const cli = docu.data();
     const fila = document.createElement("tr");
     fila.innerHTML = `
       <td>${cli.nombre}</td>
@@ -358,88 +219,53 @@ function renderClientes(tablaClientes) {
       <td>${cli.telefono}</td>
       <td>${cli.email}</td>
       <td>${cli.direccion}</td>
-      <td><button onclick="eliminarCliente(${cli.id})">❌ Eliminar</button></td>
+      <td><button onclick="eliminarCliente('${docu.id}')">❌ Eliminar</button></td>
     `;
-    tablaClientes.appendChild(fila);
+    tabla.appendChild(fila);
   });
 }
 
-function eliminarCliente(id) {
-  clientes = clientes.filter(cli => cli.id !== id);
-  const tablaClientes = document.querySelector("#tablaClientes tbody");
-  renderClientes(tablaClientes);
-}
-
-let deudores = [];
-
-function mostrarModulo(modulo) {
-  const modStock = document.getElementById("modulo-stock");
-  const modCaja = document.getElementById("modulo-caja");
-  const modReparaciones = document.getElementById("modulo-reparaciones");
-  const modClientes = document.getElementById("modulo-clientes");
-  const modDeudores = document.getElementById("modulo-deudores");
-  const contenido = document.getElementById("contenido");
-
-  if (modStock) modStock.style.display = "none";
-  if (modCaja) modCaja.style.display = "none";
-  if (modReparaciones) modReparaciones.style.display = "none";
-  if (modClientes) modClientes.style.display = "none";
-  if (modDeudores) modDeudores.style.display = "none";
-
-  switch (modulo) {
-    case "stock":
-      if (modStock) modStock.style.display = "block";
-      break;
-    case "caja":
-      if (modCaja) modCaja.style.display = "block";
-      break;
-    case "reparaciones":
-      if (modReparaciones) modReparaciones.style.display = "block";
-      break;
-    case "clientes":
-      if (modClientes) modClientes.style.display = "block";
-      break;
-    case "deudores":
-      if (modDeudores) modDeudores.style.display = "block";
-      break;
-    default:
-      contenido.innerHTML = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
-  }
-}
-
-// Manejo del formulario de deudores
+// Formulario Clientes
 document.addEventListener("DOMContentLoaded", () => {
-  const formDeudor = document.getElementById("formDeudor");
-  const tablaDeudores = document.querySelector("#tablaDeudores tbody");
-
-  if (formDeudor) {
-    formDeudor.addEventListener("submit", (e) => {
+  const formCli = document.getElementById("formCliente");
+  if (formCli) {
+    formCli.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const nombre = document.getElementById("nombreDeudor").value;
-      const monto = parseFloat(document.getElementById("montoDeuda").value);
-      const motivo = document.getElementById("motivoDeuda").value;
-
-      const deuda = {
-        id: Date.now(),
-        nombre,
-        monto,
-        motivo,
-        estado: "Pendiente"
-      };
-
-      deudores.push(deuda);
-      formDeudor.reset();
-      renderDeudores(tablaDeudores);
+      const nombre = document.getElementById("nombreCliente").value;
+      const dni = document.getElementById("dniCliente").value;
+      const telefono = document.getElementById("telefonoCliente").value;
+      const email = document.getElementById("emailCliente").value;
+      const direccion = document.getElementById("direccionCliente").value;
+      await agregarCliente(nombre, dni, telefono, email, direccion);
+      formCli.reset();
     });
   }
+  renderClientes();
 });
 
-// Renderizar tabla de deudores
-function renderDeudores(tablaDeudores) {
-  tablaDeudores.innerHTML = "";
+// ================= DEUDORES ================= //
+async function agregarDeudor(nombre, monto, motivo) {
+  await addDoc(collection(db, "deudores"), { nombre, monto, motivo, estado: "Pendiente" });
+  renderDeudores();
+}
 
-  deudores.forEach((deu) => {
+async function eliminarDeudor(id) {
+  await deleteDoc(doc(db, "deudores", id));
+  renderDeudores();
+}
+
+async function marcarPagadoDeudor(id) {
+  const ref = doc(db, "deudores", id);
+  await updateDoc(ref, { estado: "Pagado" });
+  renderDeudores();
+}
+
+async function renderDeudores() {
+  const tabla = document.querySelector("#tablaDeudores tbody");
+  tabla.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "deudores"));
+  snapshot.forEach(docu => {
+    const deu = docu.data();
     const fila = document.createElement("tr");
     fila.innerHTML = `
       <td>${deu.nombre}</td>
@@ -447,98 +273,47 @@ function renderDeudores(tablaDeudores) {
       <td>${deu.motivo}</td>
       <td>${deu.estado}</td>
       <td>
-        <button onclick="marcarPagado(${deu.id})">✔️ Pagado</button>
-        <button onclick="eliminarDeuda(${deu.id})">❌ Eliminar</button>
+        <button onclick="marcarPagadoDeudor('${docu.id}')">✔️ Pagado</button>
+        <button onclick="eliminarDeudor('${docu.id}')">❌ Eliminar</button>
       </td>
     `;
-    tablaDeudores.appendChild(fila);
+    tabla.appendChild(fila);
   });
 }
 
-// Marcar deuda como pagada
-function marcarPagado(id) {
-  const deuda = deudores.find(d => d.id === id);
-  if (deuda) {
-    deuda.estado = "Pagado";
-  }
-  const tablaDeudores = document.querySelector("#tablaDeudores tbody");
-  renderDeudores(tablaDeudores);
-}
-
-// Eliminar deuda
-function eliminarDeuda(id) {
-  deudores = deudores.filter(deu => deu.id !== id);
-  const tablaDeudores = document.querySelector("#tablaDeudores tbody");
-  renderDeudores(tablaDeudores);
-}
-
-
-let ventas = [];
-
-function mostrarModulo(modulo) {
-  const modStock = document.getElementById("modulo-stock");
-  const modCaja = document.getElementById("modulo-caja");
-  const modReparaciones = document.getElementById("modulo-reparaciones");
-  const modClientes = document.getElementById("modulo-clientes");
-  const modDeudores = document.getElementById("modulo-deudores");
-  const modVentas = document.getElementById("modulo-ventas");
-  const contenido = document.getElementById("contenido");
-
-  if (modStock) modStock.style.display = "none";
-  if (modCaja) modCaja.style.display = "none";
-  if (modReparaciones) modReparaciones.style.display = "none";
-  if (modClientes) modClientes.style.display = "none";
-  if (modDeudores) modDeudores.style.display = "none";
-  if (modVentas) modVentas.style.display = "none";
-
-  switch (modulo) {
-    case "stock": modStock.style.display = "block"; break;
-    case "caja": modCaja.style.display = "block"; break;
-    case "reparaciones": modReparaciones.style.display = "block"; break;
-    case "clientes": modClientes.style.display = "block"; break;
-    case "deudores": modDeudores.style.display = "block"; break;
-    case "ventas": modVentas.style.display = "block"; break;
-    default:
-      contenido.innerHTML = "<h2>Bienvenido al sistema</h2><p>Selecciona un módulo del menú superior para comenzar.</p>";
-  }
-}
-
-// Manejo del formulario de ventas
+// Formulario Deudores
 document.addEventListener("DOMContentLoaded", () => {
-  const formVenta = document.getElementById("formVenta");
-  const tablaVentas = document.querySelector("#tablaVentas tbody");
-
-  if (formVenta) {
-    formVenta.addEventListener("submit", (e) => {
+  const formDeu = document.getElementById("formDeudor");
+  if (formDeu) {
+    formDeu.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const producto = document.getElementById("productoVenta").value;
-      const cliente = document.getElementById("clienteVenta").value;
-      const monto = parseFloat(document.getElementById("montoVenta").value);
-      const metodo = document.getElementById("metodoPago").value;
-      const fecha = new Date().toLocaleString();
-
-      const venta = {
-        id: Date.now(),
-        producto,
-        cliente,
-        monto,
-        metodo,
-        fecha
-      };
-
-      ventas.push(venta);
-      formVenta.reset();
-      renderVentas(tablaVentas);
+      const nombre = document.getElementById("nombreDeudor").value;
+      const monto = parseFloat(document.getElementById("montoDeuda").value);
+      const motivo = document.getElementById("motivoDeuda").value;
+      await agregarDeudor(nombre, monto, motivo);
+      formDeu.reset();
     });
   }
+  renderDeudores();
 });
 
-// Renderizar tabla de ventas
-function renderVentas(tablaVentas) {
-  tablaVentas.innerHTML = "";
+// ================= VENTAS ================= //
+async function agregarVenta(producto, cliente, monto, metodo, fecha) {
+  await addDoc(collection(db, "ventas"), { producto, cliente, monto, metodo, fecha });
+  renderVentas();
+}
 
-  ventas.forEach((ven) => {
+async function eliminarVenta(id) {
+  await deleteDoc(doc(db, "ventas", id));
+  renderVentas();
+}
+
+async function renderVentas() {
+  const tabla = document.querySelector("#tablaVentas tbody");
+  tabla.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "ventas"));
+  snapshot.forEach(docu => {
+    const ven = docu.data();
     const fila = document.createElement("tr");
     fila.innerHTML = `
       <td>${ven.producto}</td>
@@ -547,38 +322,44 @@ function renderVentas(tablaVentas) {
       <td>${ven.metodo}</td>
       <td>${ven.fecha}</td>
       <td>
-        <button onclick="generarTicket(${ven.id})">🧾 Ticket</button>
-        <button onclick="eliminarVenta(${ven.id})">❌ Eliminar</button>
+        <button onclick="alert('Ticket:\\nCliente: ${ven.cliente}\\nProducto: ${ven.producto}\\nMonto: $${ven.monto}\\nPago: ${ven.metodo}\\nFecha: ${ven.fecha}')">🧾 Ticket</button>
+        <button onclick="eliminarVenta('${docu.id}')">❌ Eliminar</button>
       </td>
     `;
-    tablaVentas.appendChild(fila);
+    tabla.appendChild(fila);
   });
 }
 
-// Generar ticket (alert simple por ahora)
-function generarTicket(id) {
-  const venta = ventas.find(v => v.id === id);
-  if (venta) {
-    alert(`🧾 Ticket\nCliente: ${venta.cliente}\nProducto: ${venta.producto}\nMonto: $${venta.monto}\nPago: ${venta.metodo}\nFecha: ${venta.fecha}`);
+// Formulario Ventas
+document.addEventListener("DOMContentLoaded", () => {
+  const formVen = document.getElementById("formVenta");
+  if (formVen) {
+    formVen.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const producto = document.getElementById("productoVenta").value;
+      const cliente = document.getElementById("clienteVenta").value;
+      const monto = parseFloat(document.getElementById("montoVenta").value);
+      const metodo = document.getElementById("metodoPago").value;
+      const fecha = new Date().toLocaleString();
+      await agregarVenta(producto, cliente, monto, metodo, fecha);
+      formVen.reset();
+    });
   }
-}
+  renderVentas();
+});
 
-// Eliminar venta
-function eliminarVenta(id) {
-  ventas = ventas.filter(v => v.id !== id);
-  const tablaVentas = document.querySelector("#tablaVentas tbody");
-  renderVentas(tablaVentas);
-}
+// ================= REPORTES ================= //
+async function mostrarReportes() {
+  const ventasSnapshot = await getDocs(collection(db, "ventas"));
+  const cajaSnapshot = await getDocs(collection(db, "caja"));
 
-
-// === MÓDULO REPORTES === //
-function mostrarReportes() {
+  // Ventas por producto
   const ventasPorProducto = {};
-  ventas.forEach(v => {
+  ventasSnapshot.forEach(docu => {
+    const v = docu.data();
     ventasPorProducto[v.producto] = (ventasPorProducto[v.producto] || 0) + v.monto;
   });
 
-  // === Gráfico de Ventas por Producto === //
   const ctxVentas = document.getElementById('graficoVentas').getContext('2d');
   new Chart(ctxVentas, {
     type: 'bar',
@@ -595,35 +376,21 @@ function mostrarReportes() {
     options: { responsive: true }
   });
 
-  // === Gráfico de Caja (Ingresos vs Egresos) === //
-  const ingresos = caja.filter(t => t.tipo === "Ingreso").reduce((acc, t) => acc + t.monto, 0);
-  const egresos = caja.filter(t => t.tipo === "Egreso").reduce((acc, t) => acc + t.monto, 0);
+  // Caja Ingresos vs Egresos
+  let ingresos = 0, egresos = 0;
+  cajaSnapshot.forEach(docu => {
+    const c = docu.data();
+    if (c.tipo === "ingreso") ingresos += c.monto;
+    else egresos += c.monto;
+  });
 
   const ctxCaja = document.getElementById('graficoCaja').getContext('2d');
   new Chart(ctxCaja, {
     type: 'doughnut',
     data: {
       labels: ['Ingresos', 'Egresos'],
-      datasets: [{
-        data: [ingresos, egresos],
-        backgroundColor: ['#4caf50', '#f44336']
-      }]
+      datasets: [{ data: [ingresos, egresos], backgroundColor: ['#4caf50', '#f44336'] }]
     },
     options: { responsive: true }
   });
-}
-
-// Modificar mostrarModulo para que active reportes
-function mostrarModulo(modulo) {
-  const modulos = ["stock", "caja", "reparaciones", "clientes", "deudores", "ventas", "reportes"];
-  modulos.forEach(m => {
-    const seccion = document.getElementById(`modulo-${m}`);
-    if (seccion) seccion.style.display = "none";
-  });
-
-  const activo = document.getElementById(`modulo-${modulo}`);
-  if (activo) {
-    activo.style.display = "block";
-    if (modulo === "reportes") mostrarReportes();
-  }
 }
