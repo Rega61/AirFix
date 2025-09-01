@@ -294,3 +294,13 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 export { mostrarModulo };
+
+// -----------------------------
+// HAMBURGUESA MÓVIL
+// -----------------------------
+const menuToggle = document.querySelector('.menu-toggle');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+  navLinks.classList.toggle('active'); // Alterna la clase 'active'
+});

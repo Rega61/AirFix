@@ -1,4 +1,3 @@
-// _base.scss
 @use 'variables';
 
 body {
@@ -7,6 +6,57 @@ body {
   padding: 0;
   background-color: variables.$color-bg;
   color: variables.$color-text;
+
+  a {
+    color: variables.$color-text;
+    text-decoration: none;
+
+    &:hover {
+      color: variables.$color-btn-hover;
+    }
+  }
+}
+
+/* Ajuste del navbar de Bootstrap */
+.navbar {
+  background-color: variables.$color-header-bg !important;
+  box-shadow: variables.$shadow;
+  
+  .navbar-brand {
+    color: variables.$color-header-text !important;
+    span {
+      color: variables.$color-muted !important;
+      font-size: 0.85rem;
+    }
+  }
+
+  .nav-link {
+    color: variables.$color-text !important;
+    font-weight: bold;
+    border-radius: variables.$border-radius;
+    padding: 0.5rem 1rem;
+    transition: background 0.3s;
+
+    &:hover {
+      background-color: variables.$color-nav-hover;
+      color: variables.$color-header-text !important;
+    }
+  }
+
+  .navbar-toggler {
+    border: none;
+    color: variables.$color-text !important;
+
+    &:hover {
+      color: variables.$color-btn-hover !important;
+    }
+  }
+
+  .collapse.navbar-collapse {
+    background-color: variables.$color-header-bg !important;
+    border-radius: variables.$border-radius;
+    padding: 0.5rem 0;
+  }
 }
 
 main {
