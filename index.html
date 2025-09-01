@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    
-    <link rel="stylesheet" href="./css/style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión AIRFIX</title>
+  <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
   <header>
     <h1>Sistema de Gestión AIRFIX</h1>
     <nav>
       <ul>
-        <li><a href="#" onclick="mostrarModulo('stock')">📱 Stock</a></li>
-        <li><a href="#" onclick="mostrarModulo('caja')">💰 Caja</a></li>
-        <li><a href="#" onclick="mostrarModulo('deudores')">📋 Deudores</a></li>
-        <li><a href="#" onclick="mostrarModulo('reparaciones')">🔧 Reparaciones</a></li>
-        <li><a href="#" onclick="mostrarModulo('clientes')">👤 Clientes</a></li>
-        <li><a href="#" onclick="mostrarModulo('ventas')">🛒 Ventas</a></li>
-        <li><a href="#" onclick="mostrarModulo('reportes')">📊 Reportes</a></li>
+        <li><a href="#" data-modulo="stock">📱 Stock</a></li>
+        <li><a href="#" data-modulo="caja">💰 Caja</a></li>
+        <li><a href="#" data-modulo="deudores">📋 Deudores</a></li>
+        <li><a href="#" data-modulo="reparaciones">🔧 Reparaciones</a></li>
+        <li><a href="#" data-modulo="clientes">👤 Clientes</a></li>
+        <li><a href="#" data-modulo="ventas">🛒 Ventas</a></li>
+        <li><a href="#" data-modulo="reportes">📊 Reportes</a></li>
       </ul>
     </nav>
   </header>
@@ -27,6 +25,7 @@
   <main id="contenido">
     <h2>Bienvenido al sistema</h2>
     <p>Selecciona un módulo del menú superior para comenzar.</p>
+
 
       <!-- Contenedor del módulo de stock -->
   <section id="modulo-stock" style="display:none;">
@@ -229,22 +228,21 @@
 <!-- Importamos Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  </main>
+</main>
 
   <footer>
     <p>© 2025 NR Reparaciones</p>
   </footer>
 
-    <!-- Firebase App (obligatorio) -->
-    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
+  <!-- Importamos Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Firebase Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"></script>
+  <!-- Firebase App -->
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js"></script>
 
-    <!-- Firebase Analytics (opcional) -->
-    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js"></script>
-
-    <!-- Tu script principal -->
-    <script src="./js/script.js"></script>
+  <!-- Script principal como módulo -->
+  <script type="module" src="./js/script.js"></script>
 </body>
 </html>

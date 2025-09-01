@@ -1,13 +1,9 @@
 // script.js
-// ==========================
-// IMPORTS FIREBASE MODULAR
-// ==========================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
 
-// ==========================
-// CONFIG FIREBASE
-// ==========================
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBjR7pnvulb1niEe_nFf8nWGT6YZ4ckue4",
   authDomain: "airfix-control.firebaseapp.com",
@@ -18,326 +14,184 @@ const firebaseConfig = {
   measurementId: "G-HNTWQJ7V8L"
 };
 
+// Inicializamos Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// ==========================
-// MOSTRAR MÓDULOS
-// ==========================
+// Función para mostrar módulos
 function mostrarModulo(modulo) {
-  const modulos = ["stock","caja","reparaciones","clientes","deudores","ventas","reportes"];
-  modulos.forEach(m => {
-    const sec = document.getElementById(`modulo-${m}`);
-    if(sec) sec.style.display = "none";
-  });
-  const activo = document.getElementById(`modulo-${modulo}`);
-  if(activo) activo.style.display = "block";
+  const secciones = document.querySelectorAll('main section');
+  secciones.forEach(sec => sec.style.display = 'none');
+  
+  const selected = document.getElementById(`modulo-${modulo}`);
+  if (selected) selected.style.display = 'block';
 }
 
-// ==========================
-// STOCK
-// ==========================
-async function cargarStock() {
-  const tabla = document.querySelector("#tablaStock tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"stock"));
-  snapshot.forEach(docSnap => {
-    const cel = {id: docSnap.id, ...docSnap.data()};
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${cel.marca}</td>
-      <td>${cel.modelo}</td>
-      <td>${cel.imei}</td>
-      <td>$${cel.precio}</td>
-      <td><button onclick="eliminarStock('${cel.id}')">❌ Eliminar</button></td>
+// Asignamos click a los enlaces del nav
+document.querySelectorAll('nav a[data-modulo]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const modulo = a.dataset.modulo;
+    mostrarModulo(modulo);
+  });
+});
+
+// ----------------------
+// FORMULARIO STOCK
+// ----------------------
+const formStock = document.getElementById('formStock');
+const tablaStock = document.querySelector('#tablaStock tbody');
+
+formStock.addEventListener('submit', async e => {
+  e.preventDefault();
+  
+  const marca = document.getElementById('marca').value;
+  const modelo = document.getElementById('modelo').value;
+  const imei = document.getElementById('imei').value;
+  const precio = document.getElementById('precio').value;
+
+  try {
+    await addDoc(collection(db, 'stock'), { marca, modelo, imei, precio });
+    tablaStock.innerHTML += `
+      <tr>
+        <td>${marca}</td>
+        <td>${modelo}</td>
+        <td>${imei}</td>
+        <td>${precio}</td>
+        <td><button onclick="this.closest('tr').remove()">Eliminar</button></td>
+      </tr>
     `;
-    tabla.appendChild(fila);
-  });
-}
-
-window.eliminarStock = async (id) => {
-  await deleteDoc(doc(db,"stock",id));
-  await cargarStock();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("formStock");
-  if(form){
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const celular = {
-        marca: document.getElementById("marca").value,
-        modelo: document.getElementById("modelo").value,
-        imei: document.getElementById("imei").value,
-        precio: parseFloat(document.getElementById("precio").value)
-      };
-      await addDoc(collection(db,"stock"), celular);
-      form.reset();
-      await cargarStock();
-    });
-    cargarStock();
+    formStock.reset();
+  } catch(err) {
+    console.error("Error agregando stock:", err);
   }
 });
 
-// ==========================
-// CAJA
-// ==========================
-async function cargarCaja() {
-  const tabla = document.querySelector("#tablaCaja tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"caja"));
-  let totalIngresos = 0, totalEgresos = 0;
-  snapshot.forEach(docSnap => {
-    const mov = {id: docSnap.id, ...docSnap.data()};
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${mov.tipo}</td>
-      <td>${mov.descripcion}</td>
-      <td>$${mov.monto}</td>
-      <td><button onclick="eliminarCaja('${mov.id}')">❌ Eliminar</button></td>
-    `;
-    tabla.appendChild(fila);
-    if(mov.tipo === "ingreso") totalIngresos += mov.monto;
-    else totalEgresos += mov.monto;
-  });
-  document.getElementById("totalIngresos").innerText = `$${totalIngresos}`;
-  document.getElementById("totalEgresos").innerText = `$${totalEgresos}`;
-  document.getElementById("balance").innerText = `$${totalIngresos - totalEgresos}`;
-}
+// ----------------------
+// FORMULARIO CAJA
+// ----------------------
+const formCaja = document.getElementById('formCaja');
+const tablaCaja = document.querySelector('#tablaCaja tbody');
+const totalIngresos = document.getElementById('totalIngresos');
+const totalEgresos = document.getElementById('totalEgresos');
+const balance = document.getElementById('balance');
 
-window.eliminarCaja = async (id) => {
-  await deleteDoc(doc(db,"caja",id));
-  await cargarCaja();
-}
+let ingresos = 0;
+let egresos = 0;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("formCaja");
-  if(form){
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const mov = {
-        tipo: document.getElementById("tipo").value,
-        descripcion: document.getElementById("descripcion").value,
-        monto: parseFloat(document.getElementById("monto").value)
-      };
-      await addDoc(collection(db,"caja"), mov);
-      form.reset();
-      await cargarCaja();
-    });
-    cargarCaja();
-  }
+formCaja.addEventListener('submit', e => {
+  e.preventDefault();
+  const tipo = document.getElementById('tipo').value;
+  const descripcion = document.getElementById('descripcion').value;
+  const monto = parseFloat(document.getElementById('monto').value);
+
+  tablaCaja.innerHTML += `
+    <tr>
+      <td>${tipo}</td>
+      <td>${descripcion}</td>
+      <td>${monto}</td>
+      <td><button onclick="this.closest('tr').remove(); actualizarCaja()">Eliminar</button></td>
+    </tr>
+  `;
+
+  if(tipo === 'ingreso') ingresos += monto;
+  else egresos += monto;
+
+  actualizarCaja();
+  formCaja.reset();
 });
 
-// ==========================
-// CLIENTES
-// ==========================
-async function cargarClientes() {
-  const tabla = document.querySelector("#tablaClientes tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"clientes"));
-  snapshot.forEach(docSnap=>{
-    const cli = {id: docSnap.id, ...docSnap.data()};
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${cli.nombre}</td>
-      <td>${cli.dni}</td>
-      <td>${cli.telefono}</td>
-      <td>${cli.email}</td>
-      <td>${cli.direccion}</td>
-      <td><button onclick="eliminarCliente('${cli.id}')">❌ Eliminar</button></td>
-    `;
-    tabla.appendChild(fila);
+function actualizarCaja() {
+  ingresos = 0;
+  egresos = 0;
+  tablaCaja.querySelectorAll('tr').forEach(tr => {
+    const tipo = tr.children[0].textContent;
+    const monto = parseFloat(tr.children[2].textContent);
+    if(tipo === 'ingreso') ingresos += monto;
+    else egresos += monto;
   });
+  totalIngresos.textContent = `$${ingresos}`;
+  totalEgresos.textContent = `$${egresos}`;
+  balance.textContent = `$${ingresos - egresos}`;
 }
 
-window.eliminarCliente = async (id)=>{
-  await deleteDoc(doc(db,"clientes",id));
-  await cargarClientes();
-}
+// ----------------------
+// FORMULARIO DEUDORES
+// ----------------------
+const formDeudor = document.getElementById('formDeudor');
+const tablaDeudores = document.querySelector('#tablaDeudores tbody');
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  const form = document.getElementById("formCliente");
-  if(form){
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const cli = {
-        nombre: document.getElementById("nombreCliente").value,
-        dni: document.getElementById("dniCliente").value,
-        telefono: document.getElementById("telefonoCliente").value,
-        email: document.getElementById("emailCliente").value,
-        direccion: document.getElementById("direccionCliente").value
-      };
-      await addDoc(collection(db,"clientes"),cli);
-      form.reset();
-      await cargarClientes();
-    });
-    cargarClientes();
-  }
+formDeudor.addEventListener('submit', e => {
+  e.preventDefault();
+  const nombre = document.getElementById('nombreDeudor').value;
+  const monto = document.getElementById('montoDeuda').value;
+  const motivo = document.getElementById('motivoDeuda').value;
+
+  tablaDeudores.innerHTML += `
+    <tr>
+      <td>${nombre}</td>
+      <td>${monto}</td>
+      <td>${motivo}</td>
+      <td>Pendiente</td>
+      <td><button onclick="this.closest('tr').remove()">Eliminar</button></td>
+    </tr>
+  `;
+  formDeudor.reset();
 });
 
-// ==========================
-// DEUDORES
-// ==========================
-async function cargarDeudores() {
-  const tabla = document.querySelector("#tablaDeudores tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"deudores"));
-  snapshot.forEach(docSnap=>{
-    const d = {id: docSnap.id, ...docSnap.data()};
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${d.nombre}</td>
-      <td>$${d.monto}</td>
-      <td>${d.motivo}</td>
-      <td>${d.estado}</td>
-      <td>
-        <button onclick="marcarPagado('${d.id}')">✔️ Pagado</button>
-        <button onclick="eliminarDeudor('${d.id}')">❌ Eliminar</button>
-      </td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
+// ----------------------
+// FORMULARIO CLIENTES
+// ----------------------
+const formCliente = document.getElementById('formCliente');
+const tablaClientes = document.querySelector('#tablaClientes tbody');
 
-window.marcarPagado = async (id)=>{
-  const ref = doc(db,"deudores",id);
-  await updateDoc(ref, {estado:"Pagado"});
-  await cargarDeudores();
-}
+formCliente.addEventListener('submit', e => {
+  e.preventDefault();
+  const nombre = document.getElementById('nombreCliente').value;
+  const dni = document.getElementById('dniCliente').value;
+  const telefono = document.getElementById('telefonoCliente').value;
+  const email = document.getElementById('emailCliente').value;
+  const direccion = document.getElementById('direccionCliente').value;
 
-window.eliminarDeudor = async (id)=>{
-  await deleteDoc(doc(db,"deudores",id));
-  await cargarDeudores();
-}
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  const form = document.getElementById("formDeudor");
-  if(form){
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const deuda = {
-        nombre: document.getElementById("nombreDeudor").value,
-        monto: parseFloat(document.getElementById("montoDeuda").value),
-        motivo: document.getElementById("motivoDeuda").value,
-        estado: "Pendiente"
-      };
-      await addDoc(collection(db,"deudores"),deuda);
-      form.reset();
-      await cargarDeudores();
-    });
-    cargarDeudores();
-  }
+  tablaClientes.innerHTML += `
+    <tr>
+      <td>${nombre}</td>
+      <td>${dni}</td>
+      <td>${telefono}</td>
+      <td>${email}</td>
+      <td>${direccion}</td>
+      <td><button onclick="this.closest('tr').remove()">Eliminar</button></td>
+    </tr>
+  `;
+  formCliente.reset();
 });
 
-// ==========================
-// REPARACIONES
-// ==========================
-async function cargarReparaciones() {
-  const tabla = document.querySelector("#tablaReparaciones tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"reparaciones"));
-  snapshot.forEach(docSnap=>{
-    const rep = {id: docSnap.id, ...docSnap.data()};
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${rep.cliente}</td>
-      <td>${rep.telefono}</td>
-      <td>${rep.marca} ${rep.modelo}</td>
-      <td>${rep.imei}</td>
-      <td>${rep.falla}</td>
-      <td>
-        <select onchange="cambiarEstadoReparacion('${rep.id}',this.value)">
-          <option value="pendiente" ${rep.estado==="pendiente"?"selected":""}>Pendiente</option>
-          <option value="en proceso" ${rep.estado==="en proceso"?"selected":""}>En proceso</option>
-          <option value="finalizado" ${rep.estado==="finalizado"?"selected":""}>Finalizado</option>
-          <option value="entregado" ${rep.estado==="entregado"?"selected":""}>Entregado</option>
-        </select>
-      </td>
-      <td>
-        <button onclick="eliminarReparacion('${rep.id}')">❌ Eliminar</button>
-      </td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
+// ----------------------
+// FORMULARIO VENTAS
+// ----------------------
+const formVenta = document.getElementById('formVenta');
+const tablaVentas = document.querySelector('#tablaVentas tbody');
 
-window.cambiarEstadoReparacion = async (id,estado)=>{
-  await updateDoc(doc(db,"reparaciones",id),{estado});
-  await cargarReparaciones();
-}
+formVenta.addEventListener('submit', e => {
+  e.preventDefault();
+  const producto = document.getElementById('productoVenta').value;
+  const cliente = document.getElementById('clienteVenta').value;
+  const monto = document.getElementById('montoVenta').value;
+  const metodo = document.getElementById('metodoPago').value;
+  const fecha = new Date().toLocaleDateString();
 
-window.eliminarReparacion = async (id)=>{
-  await deleteDoc(doc(db,"reparaciones",id));
-  await cargarReparaciones();
-}
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  const form = document.getElementById("formReparacion");
-  if(form){
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const rep = {
-        cliente: document.getElementById("cliente").value,
-        telefono: document.getElementById("telefono").value,
-        marca: document.getElementById("marcaRep").value,
-        modelo: document.getElementById("modeloRep").value,
-        imei: document.getElementById("imeiRep").value,
-        falla: document.getElementById("falla").value,
-        estado: document.getElementById("estado").value
-      };
-      await addDoc(collection(db,"reparaciones"),rep);
-      form.reset();
-      await cargarReparaciones();
-    });
-    cargarReparaciones();
-  }
+  tablaVentas.innerHTML += `
+    <tr>
+      <td>${producto}</td>
+      <td>${cliente}</td>
+      <td>${monto}</td>
+      <td>${metodo}</td>
+      <td>${fecha}</td>
+      <td><button onclick="this.closest('tr').remove()">Eliminar</button></td>
+    </tr>
+  `;
+  formVenta.reset();
 });
 
-// ==========================
-// VENTAS
-// ==========================
-async function cargarVentas() {
-  const tabla = document.querySelector("#tablaVentas tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"ventas"));
-  snapshot.forEach(docSnap=>{
-    const v = {id: docSnap.id, ...docSnap.data()};
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${v.producto}</td>
-      <td>${v.cliente}</td>
-      <td>$${v.monto}</td>
-      <td>${v.metodo}</td>
-      <td>${v.fecha}</td>
-      <td>
-        <button onclick="eliminarVenta('${v.id}')">❌ Eliminar</button>
-      </td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
-
-window.eliminarVenta = async (id)=>{
-  await deleteDoc(doc(db,"ventas",id));
-  await cargarVentas();
-}
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  const form = document.getElementById("formVenta");
-  if(form){
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const venta = {
-        producto: document.getElementById("productoVenta").value,
-        cliente: document.getElementById("clienteVenta").value,
-        monto: parseFloat(document.getElementById("montoVenta").value),
-        metodo: document.getElementById("metodoPago").value,
-        fecha: new Date().toLocaleString()
-      };
-      await addDoc(collection(db,"ventas"),venta);
-      form.reset();
-      await cargarVentas();
-    });
-    cargarVentas();
-  }
-});
+export { mostrarModulo };
