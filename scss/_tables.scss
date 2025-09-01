@@ -1,0 +1,48 @@
+@use 'variables' as v;
+
+.reportes-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: v.$table-bg;
+  border-radius: v.$border-radius;
+  box-shadow: v.$shadow;
+  color: v.$color-text;
+  text-align: center;
+
+  h3 {
+    margin-bottom: 1rem;
+    color: v.$color-text;
+  }
+}
+
+// Gráficos
+canvas {
+  width: 100% !important;
+  height: 250px !important;
+  background: v.$input-bg;
+  border-radius: v.$border-radius;
+  box-shadow: v.$shadow;
+  margin-bottom: 2rem;
+}
+
+// Tarjetas de resumen
+.tarjeta-resumen {
+  display: inline-block;
+  background: v.$input-bg;
+  color: v.$color-text;
+  padding: 1rem 1.5rem;
+  margin: 0.5rem;
+  border-radius: v.$border-radius;
+  box-shadow: v.$shadow;
+  min-width: 120px;
+  font-weight: bold;
+  text-align: center;
+
+  span {
+    display: block;
+    margin-top: 0.3rem;
+    color: v.$color-muted;
+    font-size: 0.85rem;
+  }
+}

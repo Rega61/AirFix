@@ -7,20 +7,33 @@
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-  <header>
-    <h1>Sistema de Gestión AIRFIX</h1>
-    <nav>
-      <ul>
-        <li><a href="#" data-modulo="stock">📱 Stock</a></li>
-        <li><a href="#" data-modulo="caja">💰 Caja</a></li>
-        <li><a href="#" data-modulo="deudores">📋 Deudores</a></li>
-        <li><a href="#" data-modulo="reparaciones">🔧 Reparaciones</a></li>
-        <li><a href="#" data-modulo="clientes">👤 Clientes</a></li>
-        <li><a href="#" data-modulo="ventas">🛒 Ventas</a></li>
-        <li><a href="#" data-modulo="reportes">📊 Reportes</a></li>
-      </ul>
-    </nav>
-  </header>
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <h1>AIRFIX</h1>
+      <span>Sistema de Gestión</span>
+    </div>
+    <div class="user-profile">
+      <span>Hola, Nico 👋</span>
+      <a href="pages/perfil.html">Perfil</a> | 
+      <a href="pages/logout.html">Cerrar sesión</a>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <button class="menu-toggle" aria-label="Abrir menú">☰</button>
+    <ul class="nav-links">
+      <li><a href="pages/stock.html" data-modulo="stock">📱 Stock</a></li>
+      <li><a href="pages/caja.html" data-modulo="caja">💰 Caja</a></li>
+      <li><a href="pages/deudores.html" data-modulo="deudores">📋 Deudores</a></li>
+      <li><a href="pages/reparaciones.html" data-modulo="reparaciones">🔧 Reparaciones</a></li>
+      <li><a href="pages/clientes.html" data-modulo="clientes">👤 Clientes</a></li>
+      <li><a href="pages/ventas.html" data-modulo="ventas">🛒 Ventas</a></li>
+      <li><a href="pages/reportes.html" data-modulo="reportes">📊 Reportes</a></li>
+    </ul>
+  </nav>
+</header>
+
 
   <main id="contenido">
     <h2>Bienvenido al sistema</h2>

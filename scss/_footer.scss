@@ -1,0 +1,18 @@
+// _footer.scss
+@use 'variables';
+
+footer {
+  background-color: variables.$color-header-bg; // fondo oscuro
+  color: variables.$color-text;                // texto claro
+  text-align: center;
+  padding: 1rem;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  box-shadow: variables.$shadow;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}

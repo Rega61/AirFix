@@ -1,0 +1,59 @@
+// =====================================
+// Colores principales
+// =====================================
+$color-bg: #121212;                 // Fondo general
+$color-text: #e0e0e0;               // Texto principal
+$color-muted: #a0a0a0;              // Texto secundario / deshabilitado
+
+// =====================================
+// Header y navegación
+// =====================================
+$color-header-bg: #1f1f1f;
+$color-header-text: $color-text;
+$color-nav-bg: #1976d2;
+$color-nav-hover: #0d47a1;
+
+// =====================================
+// Footer
+// =====================================
+$color-footer-bg: #1a1a1a;
+$color-footer-text: $color-text;
+
+// =====================================
+// Botones
+// =====================================
+$color-btn-bg: #1976d2;
+$color-btn-hover: #0d47a1;
+$color-btn-text: #ffffff;
+
+// =====================================
+// Formularios / Inputs / Selects
+// =====================================
+$input-bg: #1e1e1e;
+$input-border: #333333;
+$input-text: #ffffff;
+$input-placeholder: #888888;
+
+
+// =====================================
+// Tablas
+// =====================================
+$table-bg: #1e1e1e;
+$table-border: #333333;
+$table-header-bg: #1976d2;
+$table-header-text: #ffffff;
+$table-row-hover: #2a2a2a;
+
+// =====================================
+// Estados / Indicadores
+// =====================================
+$estado-pendiente: #fbc02d;
+$estado-en-proceso: #1976d2;
+$estado-finalizado: #388e3c;
+$estado-entregado: #7b1fa2;
+
+// =====================================
+// Otros
+// =====================================
+$shadow: 0 0 5px rgba(0,0,0,0.2);
+$border-radius: 6px;
