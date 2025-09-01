@@ -1,24 +1,12 @@
-// === FIREBASE CONFIG === //
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import { 
-  getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
-} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+// === DATOS LOCALES === //
+let stock = [];
+let movimientos = [];
+let reparaciones = [];
+let clientes = [];
+let deudores = [];
+let ventas = [];
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBjR7pnvulb1niEe_nFf8nWGT6YZ4ckue4",
-  authDomain: "airfix-control.firebaseapp.com",
-  projectId: "airfix-control",
-  storageBucket: "airfix-control.firebasestorage.app",
-  messagingSenderId: "111362837485",
-  appId: "1:111362837485:web:7e1d29a0e834bd5e2235e4",
-  measurementId: "G-HNTWQJ7V8L"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// === FUNCIONES GENERALES DE MÓDULOS === //
+// === MOSTRAR MÓDULO === //
 function mostrarModulo(modulo) {
   const modulos = ["stock", "caja", "reparaciones", "clientes", "deudores", "ventas", "reportes"];
   modulos.forEach(m => {
@@ -33,153 +21,45 @@ function mostrarModulo(modulo) {
   }
 }
 
-// ================= STOCK ================= //
-async function agregarStock(marca, modelo, imei, precio) {
-  await addDoc(collection(db, "stock"), { marca, modelo, imei, precio });
-  renderStock();
-}
-
-async function eliminarStock(id) {
-  await deleteDoc(doc(db, "stock", id));
-  renderStock();
-}
-
-async function renderStock() {
-  const tablaStock = document.querySelector("#tablaStock tbody");
-  tablaStock.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "stock"));
-  snapshot.forEach(docu => {
-    const cel = docu.data();
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${cel.marca}</td>
-      <td>${cel.modelo}</td>
-      <td>${cel.imei}</td>
-      <td>$${cel.precio}</td>
-      <td><button onclick="eliminarStock('${docu.id}')">❌ Eliminar</button></td>
-    `;
-    tablaStock.appendChild(fila);
-  });
-}
-
-// Formulario Stock
+// === DOM CONTENT LOADED === //
 document.addEventListener("DOMContentLoaded", () => {
+
+  // === FORMULARIO STOCK === //
   const formStock = document.getElementById("formStock");
+  const tablaStock = document.querySelector("#tablaStock tbody");
   if (formStock) {
-    formStock.addEventListener("submit", async (e) => {
+    formStock.addEventListener("submit", (e) => {
       e.preventDefault();
       const marca = document.getElementById("marca").value;
       const modelo = document.getElementById("modelo").value;
       const imei = document.getElementById("imei").value;
-      const precio = parseFloat(document.getElementById("precio").value);
-      await agregarStock(marca, modelo, imei, precio);
+      const precio = document.getElementById("precio").value;
+      stock.push({ id: Date.now(), marca, modelo, imei, precio });
       formStock.reset();
+      renderStock(tablaStock);
     });
   }
-  renderStock();
-});
 
-// ================= CAJA ================= //
-async function agregarMovimiento(tipo, descripcion, monto) {
-  await addDoc(collection(db, "caja"), { tipo, descripcion, monto });
-  renderCaja();
-}
-
-async function eliminarMovimiento(id) {
-  await deleteDoc(doc(db, "caja", id));
-  renderCaja();
-}
-
-async function renderCaja() {
-  const tablaCaja = document.querySelector("#tablaCaja tbody");
-  tablaCaja.innerHTML = "";
-  let totalIngresos = 0, totalEgresos = 0;
-
-  const snapshot = await getDocs(collection(db, "caja"));
-  snapshot.forEach(docu => {
-    const mov = docu.data();
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${mov.tipo}</td>
-      <td>${mov.descripcion}</td>
-      <td>$${mov.monto}</td>
-      <td><button onclick="eliminarMovimiento('${docu.id}')">❌ Eliminar</button></td>
-    `;
-    tablaCaja.appendChild(fila);
-    if (mov.tipo === "ingreso") totalIngresos += mov.monto;
-    else totalEgresos += mov.monto;
-  });
-
-  document.getElementById("totalIngresos").innerText = `$${totalIngresos}`;
-  document.getElementById("totalEgresos").innerText = `$${totalEgresos}`;
-  document.getElementById("balance").innerText = `$${totalIngresos - totalEgresos}`;
-}
-
-// Formulario Caja
-document.addEventListener("DOMContentLoaded", () => {
+  // === FORMULARIO CAJA === //
   const formCaja = document.getElementById("formCaja");
+  const tablaCaja = document.querySelector("#tablaCaja tbody");
   if (formCaja) {
-    formCaja.addEventListener("submit", async (e) => {
+    formCaja.addEventListener("submit", (e) => {
       e.preventDefault();
       const tipo = document.getElementById("tipo").value;
       const descripcion = document.getElementById("descripcion").value;
       const monto = parseFloat(document.getElementById("monto").value);
-      await agregarMovimiento(tipo, descripcion, monto);
+      movimientos.push({ id: Date.now(), tipo, descripcion, monto });
       formCaja.reset();
+      renderCaja(tablaCaja);
     });
   }
-  renderCaja();
-});
 
-// ================= REPARACIONES ================= //
-async function agregarReparacion(cliente, telefono, marca, modelo, imei, falla, estado) {
-  await addDoc(collection(db, "reparaciones"), { cliente, telefono, marca, modelo, imei, falla, estado });
-  renderReparaciones();
-}
-
-async function eliminarReparacion(id) {
-  await deleteDoc(doc(db, "reparaciones", id));
-  renderReparaciones();
-}
-
-async function cambiarEstadoReparacion(id, nuevoEstado) {
-  const ref = doc(db, "reparaciones", id);
-  await updateDoc(ref, { estado: nuevoEstado });
-  renderReparaciones();
-}
-
-async function renderReparaciones() {
-  const tabla = document.querySelector("#tablaReparaciones tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "reparaciones"));
-  snapshot.forEach(docu => {
-    const rep = docu.data();
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${rep.cliente}</td>
-      <td>${rep.telefono}</td>
-      <td>${rep.marca} ${rep.modelo}</td>
-      <td>${rep.imei}</td>
-      <td>${rep.falla}</td>
-      <td>
-        <select onchange="cambiarEstadoReparacion('${docu.id}', this.value)">
-          <option value="pendiente" ${rep.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
-          <option value="en proceso" ${rep.estado === "en proceso" ? "selected" : ""}>En proceso</option>
-          <option value="finalizado" ${rep.estado === "finalizado" ? "selected" : ""}>Finalizado</option>
-          <option value="entregado" ${rep.estado === "entregado" ? "selected" : ""}>Entregado</option>
-        </select>
-      </td>
-      <td><button onclick="eliminarReparacion('${docu.id}')">❌ Eliminar</button></td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
-
-// Formulario Reparaciones
-document.addEventListener("DOMContentLoaded", () => {
-  const formRep = document.getElementById("formReparacion");
-  if (formRep) {
-    formRep.addEventListener("submit", async (e) => {
+  // === FORMULARIO REPARACIONES === //
+  const formReparacion = document.getElementById("formReparacion");
+  const tablaReparaciones = document.querySelector("#tablaReparaciones tbody");
+  if (formReparacion) {
+    formReparacion.addEventListener("submit", (e) => {
       e.preventDefault();
       const cliente = document.getElementById("cliente").value;
       const telefono = document.getElementById("telefono").value;
@@ -188,209 +68,181 @@ document.addEventListener("DOMContentLoaded", () => {
       const imei = document.getElementById("imeiRep").value;
       const falla = document.getElementById("falla").value;
       const estado = document.getElementById("estado").value;
-      await agregarReparacion(cliente, telefono, marca, modelo, imei, falla, estado);
-      formRep.reset();
+      reparaciones.push({ id: Date.now(), cliente, telefono, marca, modelo, imei, falla, estado });
+      formReparacion.reset();
+      renderReparaciones(tablaReparaciones);
     });
   }
-  renderReparaciones();
-});
 
-// ================= CLIENTES ================= //
-async function agregarCliente(nombre, dni, telefono, email, direccion) {
-  await addDoc(collection(db, "clientes"), { nombre, dni, telefono, email, direccion });
-  renderClientes();
-}
-
-async function eliminarCliente(id) {
-  await deleteDoc(doc(db, "clientes", id));
-  renderClientes();
-}
-
-async function renderClientes() {
-  const tabla = document.querySelector("#tablaClientes tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "clientes"));
-  snapshot.forEach(docu => {
-    const cli = docu.data();
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${cli.nombre}</td>
-      <td>${cli.dni}</td>
-      <td>${cli.telefono}</td>
-      <td>${cli.email}</td>
-      <td>${cli.direccion}</td>
-      <td><button onclick="eliminarCliente('${docu.id}')">❌ Eliminar</button></td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
-
-// Formulario Clientes
-document.addEventListener("DOMContentLoaded", () => {
-  const formCli = document.getElementById("formCliente");
-  if (formCli) {
-    formCli.addEventListener("submit", async (e) => {
+  // === FORMULARIO CLIENTES === //
+  const formCliente = document.getElementById("formCliente");
+  const tablaClientes = document.querySelector("#tablaClientes tbody");
+  if (formCliente) {
+    formCliente.addEventListener("submit", (e) => {
       e.preventDefault();
       const nombre = document.getElementById("nombreCliente").value;
       const dni = document.getElementById("dniCliente").value;
       const telefono = document.getElementById("telefonoCliente").value;
       const email = document.getElementById("emailCliente").value;
       const direccion = document.getElementById("direccionCliente").value;
-      await agregarCliente(nombre, dni, telefono, email, direccion);
-      formCli.reset();
+      clientes.push({ id: Date.now(), nombre, dni, telefono, email, direccion });
+      formCliente.reset();
+      renderClientes(tablaClientes);
     });
   }
-  renderClientes();
-});
 
-// ================= DEUDORES ================= //
-async function agregarDeudor(nombre, monto, motivo) {
-  await addDoc(collection(db, "deudores"), { nombre, monto, motivo, estado: "Pendiente" });
-  renderDeudores();
-}
-
-async function eliminarDeudor(id) {
-  await deleteDoc(doc(db, "deudores", id));
-  renderDeudores();
-}
-
-async function marcarPagadoDeudor(id) {
-  const ref = doc(db, "deudores", id);
-  await updateDoc(ref, { estado: "Pagado" });
-  renderDeudores();
-}
-
-async function renderDeudores() {
-  const tabla = document.querySelector("#tablaDeudores tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "deudores"));
-  snapshot.forEach(docu => {
-    const deu = docu.data();
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${deu.nombre}</td>
-      <td>$${deu.monto}</td>
-      <td>${deu.motivo}</td>
-      <td>${deu.estado}</td>
-      <td>
-        <button onclick="marcarPagadoDeudor('${docu.id}')">✔️ Pagado</button>
-        <button onclick="eliminarDeudor('${docu.id}')">❌ Eliminar</button>
-      </td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
-
-// Formulario Deudores
-document.addEventListener("DOMContentLoaded", () => {
-  const formDeu = document.getElementById("formDeudor");
-  if (formDeu) {
-    formDeu.addEventListener("submit", async (e) => {
+  // === FORMULARIO DEUDORES === //
+  const formDeudor = document.getElementById("formDeudor");
+  const tablaDeudores = document.querySelector("#tablaDeudores tbody");
+  if (formDeudor) {
+    formDeudor.addEventListener("submit", (e) => {
       e.preventDefault();
       const nombre = document.getElementById("nombreDeudor").value;
       const monto = parseFloat(document.getElementById("montoDeuda").value);
       const motivo = document.getElementById("motivoDeuda").value;
-      await agregarDeudor(nombre, monto, motivo);
-      formDeu.reset();
+      deudores.push({ id: Date.now(), nombre, monto, motivo, estado: "Pendiente" });
+      formDeudor.reset();
+      renderDeudores(tablaDeudores);
     });
   }
-  renderDeudores();
-});
 
-// ================= VENTAS ================= //
-async function agregarVenta(producto, cliente, monto, metodo, fecha) {
-  await addDoc(collection(db, "ventas"), { producto, cliente, monto, metodo, fecha });
-  renderVentas();
-}
-
-async function eliminarVenta(id) {
-  await deleteDoc(doc(db, "ventas", id));
-  renderVentas();
-}
-
-async function renderVentas() {
-  const tabla = document.querySelector("#tablaVentas tbody");
-  tabla.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "ventas"));
-  snapshot.forEach(docu => {
-    const ven = docu.data();
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${ven.producto}</td>
-      <td>${ven.cliente}</td>
-      <td>$${ven.monto}</td>
-      <td>${ven.metodo}</td>
-      <td>${ven.fecha}</td>
-      <td>
-        <button onclick="alert('Ticket:\\nCliente: ${ven.cliente}\\nProducto: ${ven.producto}\\nMonto: $${ven.monto}\\nPago: ${ven.metodo}\\nFecha: ${ven.fecha}')">🧾 Ticket</button>
-        <button onclick="eliminarVenta('${docu.id}')">❌ Eliminar</button>
-      </td>
-    `;
-    tabla.appendChild(fila);
-  });
-}
-
-// Formulario Ventas
-document.addEventListener("DOMContentLoaded", () => {
-  const formVen = document.getElementById("formVenta");
-  if (formVen) {
-    formVen.addEventListener("submit", async (e) => {
+  // === FORMULARIO VENTAS === //
+  const formVenta = document.getElementById("formVenta");
+  const tablaVentas = document.querySelector("#tablaVentas tbody");
+  if (formVenta) {
+    formVenta.addEventListener("submit", (e) => {
       e.preventDefault();
       const producto = document.getElementById("productoVenta").value;
       const cliente = document.getElementById("clienteVenta").value;
       const monto = parseFloat(document.getElementById("montoVenta").value);
       const metodo = document.getElementById("metodoPago").value;
       const fecha = new Date().toLocaleString();
-      await agregarVenta(producto, cliente, monto, metodo, fecha);
-      formVen.reset();
+      ventas.push({ id: Date.now(), producto, cliente, monto, metodo, fecha });
+      formVenta.reset();
+      renderVentas(tablaVentas);
     });
   }
-  renderVentas();
+
 });
 
-// ================= REPORTES ================= //
-async function mostrarReportes() {
-  const ventasSnapshot = await getDocs(collection(db, "ventas"));
-  const cajaSnapshot = await getDocs(collection(db, "caja"));
-
-  // Ventas por producto
-  const ventasPorProducto = {};
-  ventasSnapshot.forEach(docu => {
-    const v = docu.data();
-    ventasPorProducto[v.producto] = (ventasPorProducto[v.producto] || 0) + v.monto;
+// === FUNCIONES RENDER === //
+function renderStock(tabla) {
+  tabla.innerHTML = "";
+  stock.forEach(c => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td>${c.marca}</td><td>${c.modelo}</td><td>${c.imei}</td><td>$${c.precio}</td>
+      <td><button onclick="eliminarStock(${c.id})">❌</button></td>
+    `;
+    tabla.appendChild(fila);
   });
+}
+function eliminarStock(id) {
+  stock = stock.filter(c => c.id !== id);
+  renderStock(document.querySelector("#tablaStock tbody"));
+}
 
-  const ctxVentas = document.getElementById('graficoVentas').getContext('2d');
-  new Chart(ctxVentas, {
-    type: 'bar',
-    data: {
-      labels: Object.keys(ventasPorProducto),
-      datasets: [{
-        label: 'Monto vendido ($)',
-        data: Object.values(ventasPorProducto),
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: { responsive: true }
+function renderCaja(tabla) {
+  tabla.innerHTML = "";
+  let totalIngresos = 0, totalEgresos = 0;
+  movimientos.forEach(m => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `<td>${m.tipo}</td><td>${m.descripcion}</td><td>$${m.monto}</td><td><button onclick="eliminarMovimiento(${m.id})">❌</button></td>`;
+    tabla.appendChild(fila);
+    if (m.tipo === "ingreso") totalIngresos += m.monto; else totalEgresos += m.monto;
   });
+  document.getElementById("totalIngresos").innerText = `$${totalIngresos}`;
+  document.getElementById("totalEgresos").innerText = `$${totalEgresos}`;
+  document.getElementById("balance").innerText = `$${totalIngresos - totalEgresos}`;
+}
+function eliminarMovimiento(id) {
+  movimientos = movimientos.filter(m => m.id !== id);
+  renderCaja(document.querySelector("#tablaCaja tbody"));
+}
 
-  // Caja Ingresos vs Egresos
-  let ingresos = 0, egresos = 0;
-  cajaSnapshot.forEach(docu => {
-    const c = docu.data();
-    if (c.tipo === "ingreso") ingresos += c.monto;
-    else egresos += c.monto;
+function renderReparaciones(tabla) {
+  tabla.innerHTML = "";
+  reparaciones.forEach(r => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td>${r.cliente}</td><td>${r.telefono}</td><td>${r.marca} ${r.modelo}</td><td>${r.imei}</td><td>${r.falla}</td>
+      <td>
+        <select onchange="cambiarEstado(${r.id}, this.value)">
+          <option value="pendiente" ${r.estado==="pendiente"?"selected":""}>Pendiente</option>
+          <option value="en proceso" ${r.estado==="en proceso"?"selected":""}>En proceso</option>
+          <option value="finalizado" ${r.estado==="finalizado"?"selected":""}>Finalizado</option>
+          <option value="entregado" ${r.estado==="entregado"?"selected":""}>Entregado</option>
+        </select>
+      </td>
+      <td><button onclick="eliminarReparacion(${r.id})">❌</button></td>
+    `;
+    tabla.appendChild(fila);
   });
+}
+function cambiarEstado(id, estado) {
+  const r = reparaciones.find(x=>x.id===id);
+  if(r) r.estado=estado;
+}
+function eliminarReparacion(id) {
+  reparaciones = reparaciones.filter(r=>r.id!==id);
+  renderReparaciones(document.querySelector("#tablaReparaciones tbody"));
+}
 
-  const ctxCaja = document.getElementById('graficoCaja').getContext('2d');
-  new Chart(ctxCaja, {
-    type: 'doughnut',
-    data: {
-      labels: ['Ingresos', 'Egresos'],
-      datasets: [{ data: [ingresos, egresos], backgroundColor: ['#4caf50', '#f44336'] }]
-    },
-    options: { responsive: true }
+function renderClientes(tabla) {
+  tabla.innerHTML = "";
+  clientes.forEach(c => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `<td>${c.nombre}</td><td>${c.dni}</td><td>${c.telefono}</td><td>${c.email}</td><td>${c.direccion}</td><td><button onclick="eliminarCliente(${c.id})">❌</button></td>`;
+    tabla.appendChild(fila);
   });
+}
+function eliminarCliente(id) {
+  clientes = clientes.filter(c=>c.id!==id);
+  renderClientes(document.querySelector("#tablaClientes tbody"));
+}
+
+function renderDeudores(tabla) {
+  tabla.innerHTML = "";
+  deudores.forEach(d => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `<td>${d.nombre}</td><td>$${d.monto}</td><td>${d.motivo}</td><td>${d.estado}</td>
+      <td><button onclick="marcarPagado(${d.id})">✔️</button> <button onclick="eliminarDeuda(${d.id})">❌</button></td>`;
+    tabla.appendChild(fila);
+  });
+}
+function marcarPagado(id) {
+  const d = deudores.find(x=>x.id===id);
+  if(d) d.estado="Pagado";
+  renderDeudores(document.querySelector("#tablaDeudores tbody"));
+}
+function eliminarDeuda(id) {
+  deudores = deudores.filter(x=>x.id!==id);
+  renderDeudores(document.querySelector("#tablaDeudores tbody"));
+}
+
+function renderVentas(tabla) {
+  tabla.innerHTML = "";
+  ventas.forEach(v => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `<td>${v.producto}</td><td>${v.cliente}</td><td>$${v.monto}</td><td>${v.metodo}</td><td>${v.fecha}</td>
+      <td><button onclick="generarTicket(${v.id})">🧾</button> <button onclick="eliminarVenta(${v.id})">❌</button></td>`;
+    tabla.appendChild(fila);
+  });
+}
+function generarTicket(id) {
+  const v = ventas.find(x=>x.id===id);
+  if(v) alert(`🧾 Ticket\nCliente: ${v.cliente}\nProducto: ${v.producto}\nMonto: $${v.monto}\nPago: ${v.metodo}\nFecha: ${v.fecha}`);
+}
+function eliminarVenta(id) {
+  ventas = ventas.filter(x=>x.id!==id);
+  renderVentas(document.querySelector("#tablaVentas tbody"));
+}
+
+// === MÓDULO REPORTES === //
+function mostrarReportes() {
+  // Para simplificar: mostrar solo totales
+  const totalVentas = ventas.reduce((a,b)=>a+b.monto,0);
+  const totalCaja = movimientos.reduce((a,b)=>a+b.monto,0);
+  document.getElementById("totalVentas").innerText = `$${totalVentas}`;
+  document.getElementById("totalCaja").innerText = `$${totalCaja}`;
 }
