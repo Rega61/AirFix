@@ -1,0 +1,155 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f6f9;
+  color: #333;
+}
+
+header {
+  background: #1976d2;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+nav ul li {
+  margin: 0.5rem;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  background: #1565c0;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+nav ul li a:hover {
+  background: #0d47a1;
+}
+
+main {
+  padding: 2rem;
+  text-align: center;
+}
+
+footer {
+  background: #222;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+form {
+  margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+form input, form button {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+form button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+form button:hover {
+  background: #0d47a1;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+th {
+  background: #1976d2;
+  color: white;
+}
+
+#modulo-caja p {
+  font-size: 1.1rem;
+  margin: 0.3rem 0;
+}
+
+#modulo-caja strong {
+  color: #0d47a1;
+}
+
+#modulo-reparaciones select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#tablaReparaciones td {
+  font-size: 0.9rem;
+}
+
+#modulo-clientes td {
+  font-size: 0.9rem;
+}
+
+#modulo-clientes h3 {
+  margin-top: 1rem;
+}
+
+#modulo-deudores td {
+  font-size: 0.9rem;
+}
+
+#modulo-deudores h3 {
+  margin-top: 1rem;
+}
+
+#modulo-ventas td {
+  font-size: 0.9rem;
+}
+
+#modulo-ventas h3 {
+  margin-top: 1rem;
+}
+
+
+.reportes-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 1rem;
+}
+
+canvas {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
