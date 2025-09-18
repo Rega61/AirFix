@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión AIRFIX</title>
+  
+  <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Tu CSS personalizado -->
+<link rel="stylesheet" href="./css/style.css">
+
+</head>
+  <script>
+    // Verificar si está logueado
+    if (localStorage.getItem("loggedIn") !== "true") {
+      window.location.href = "login.html"; // si no está logueado, redirige
+    }
+  </script>
+<body>
+<!-- Navbar -->
+  <header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+      <!-- Logo / Título -->
+      <a class="navbar-brand d-flex flex-column" href="#">
+        <span style="font-weight:bold;">AIRFIX</span>
+        <small>Sistema de Gestión</small>
+      </a>
+
+      <!-- Botón hamburguesa -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Menú -->
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="pages/stock.html" data-modulo="stock">📱 Stock</a></li>
+          <li class="nav-item"><a class="nav-link" href="pages/caja.html" data-modulo="caja">💰 Caja</a></li>
+          <li class="nav-item"><a class="nav-link" href="pages/deudores.html" data-modulo="deudores">📋 Deudores</a></li>
+          <li class="nav-item"><a class="nav-link" href="pages/reparaciones.html" data-modulo="reparaciones">🔧 Reparaciones</a></li>
+          <li class="nav-item"><a class="nav-link" href="pages/clientes.html" data-modulo="clientes">👤 Clientes</a></li>
+          <li class="nav-item"><a class="nav-link" href="pages/ventas.html" data-modulo="ventas">🛒 Ventas</a></li>
+          <li class="nav-item"><a class="nav-link" href="pages/reportes.html" data-modulo="reportes">📊 Reportes</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+</header>
+
+
+  <main id="contenido">
+    <h2>Bienvenido al sistema</h2>
+    <p>Selecciona un módulo del menú superior para comenzar.</p>
+
+     <button onclick="logout()">Cerrar Sesión</button>
+
+
+      <!-- Contenedor del módulo de stock -->
+  <section id="modulo-stock" style="display:none;">
+    <h2>📱 Módulo Stock</h2>
+    <form id="formStock">
+      <input type="text" id="marca" placeholder="Marca" required>
+      <input type="text" id="modelo" placeholder="Modelo" required>
+      <input type="text" id="imei" placeholder="IMEI" required>
+      <input type="number" id="precio" placeholder="Precio" required>
+      <button type="submit">Agregar</button>
+    </form>
+
+    <h3>Lista de celulares</h3>
+    <table id="tablaStock">
+      <thead>
+        <tr>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>IMEI</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Contenedor del módulo de caja -->
+<section id="modulo-caja" style="display:none;">
+  <h2>💰 Módulo Caja</h2>
+
+  <form id="formCaja">
+    <select id="tipo" required>
+      <option value="">-- Tipo de movimiento --</option>
+      <option value="ingreso">Ingreso</option>
+      <option value="egreso">Egreso</option>
+    </select>
+    <input type="text" id="descripcion" placeholder="Descripción" required>
+    <input type="number" id="monto" placeholder="Monto" required>
+    <button type="submit">Registrar</button>
+  </form>
+
+  <h3>Movimientos</h3>
+  <table id="tablaCaja">
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Descripción</th>
+        <th>Monto</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Resumen</h3>
+  <p>Total ingresos: <span id="totalIngresos">$0</span></p>
+  <p>Total egresos: <span id="totalEgresos">$0</span></p>
+  <p><strong>Balance: <span id="balance">$0</span></strong></p>
+</section>
+
+<!-- Contenedor del módulo de reparaciones -->
+<section id="modulo-reparaciones" style="display:none;">
+  <h2>🔧 Módulo Reparaciones</h2>
+
+  <form id="formReparacion">
+    <input type="text" id="cliente" placeholder="Nombre del cliente" required>
+    <input type="text" id="telefono" placeholder="Teléfono" required>
+    <input type="text" id="marcaRep" placeholder="Marca" required>
+    <input type="text" id="modeloRep" placeholder="Modelo" required>
+    <input type="text" id="imeiRep" placeholder="IMEI" required>
+    <input type="text" id="falla" placeholder="Falla reportada" required>
+    <select id="estado">
+      <option value="pendiente">Pendiente</option>
+      <option value="en proceso">En proceso</option>
+      <option value="finalizado">Finalizado</option>
+      <option value="entregado">Entregado</option>
+    </select>
+    <button type="submit">Registrar</button>
+  </form>
+
+  <h3>Equipos en reparación</h3>
+  <table id="tablaReparaciones">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Teléfono</th>
+        <th>Equipo</th>
+        <th>IMEI</th>
+        <th>Falla</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Contenedor del módulo de clientes -->
+<section id="modulo-clientes" style="display:none;">
+  <h2>👤 Módulo Clientes</h2>
+
+  <form id="formCliente">
+    <input type="text" id="nombreCliente" placeholder="Nombre y apellido" required>
+    <input type="text" id="dniCliente" placeholder="DNI" required>
+    <input type="text" id="telefonoCliente" placeholder="Teléfono" required>
+    <input type="email" id="emailCliente" placeholder="Email">
+    <input type="text" id="direccionCliente" placeholder="Dirección">
+    <button type="submit">Agregar Cliente</button>
+  </form>
+
+  <h3>Lista de clientes</h3>
+  <table id="tablaClientes">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>DNI</th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th>Dirección</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Contenedor del módulo de deudores -->
+<section id="modulo-deudores" style="display:none;">
+  <h2>📋 Módulo Deudores</h2>
+
+  <form id="formDeudor">
+    <input type="text" id="nombreDeudor" placeholder="Nombre del cliente" required>
+    <input type="number" id="montoDeuda" placeholder="Monto adeudado" required>
+    <input type="text" id="motivoDeuda" placeholder="Motivo" required>
+    <button type="submit">Agregar Deuda</button>
+  </form>
+
+  <h3>Lista de deudores</h3>
+  <table id="tablaDeudores">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Monto</th>
+        <th>Motivo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Contenedor del módulo de ventas -->
+<section id="modulo-ventas" style="display:none;">
+  <h2>🛒 Módulo Ventas y Facturación</h2>
+
+  <form id="formVenta">
+    <input type="text" id="productoVenta" placeholder="Producto" required>
+    <input type="text" id="clienteVenta" placeholder="Cliente" required>
+    <input type="number" id="montoVenta" placeholder="Monto" required>
+    <select id="metodoPago" required>
+      <option value="">Método de pago</option>
+      <option>Efectivo</option>
+      <option>Tarjeta</option>
+      <option>Transferencia</option>
+    </select>
+    <button type="submit">Registrar Venta</button>
+  </form>
+
+  <h3>Historial de Ventas</h3>
+  <table id="tablaVentas">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cliente</th>
+        <th>Monto</th>
+        <th>Método de Pago</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Contenedor del módulo de reportes -->
+<section id="modulo-reportes" style="display:none;">
+  <h2>📊 Módulo de Reportes</h2>
+
+  <div class="reportes-container">
+    <h3>Ventas por producto</h3>
+    <canvas id="graficoVentas" width="400" height="200"></canvas>
+
+    <h3>Flujo de Caja</h3>
+    <canvas id="graficoCaja" width="400" height="200"></canvas>
+  </div>
+</section>
+
+<!-- Importamos Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</main>
+
+  <footer>
+    <p>© 2025 NR Reparaciones</p>
+  </footer>
+
+  <!-- Importamos Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase App -->
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js"></script>
+
+  <!-- Bootstrap Bundle con Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script principal como módulo -->
+  <script type="module" src="./js/script.js"></script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem("loggedIn");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
+</body>
+</html>

@@ -1,0 +1,89 @@
+@use 'variables' as v;
+
+// Contenedores generales de módulos
+section {
+  background: v.$table-bg;
+  color: v.$color-text;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: v.$border-radius;
+  box-shadow: v.$shadow;
+}
+
+// Tablas dentro de módulos
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: v.$table-bg;
+
+  th, td {
+    border: 1px solid v.$table-border;
+    padding: 0.5rem;
+    text-align: center;
+  }
+
+  th {
+    background: v.$table-header-bg;
+    color: v.$table-header-text;
+  }
+
+  tbody tr:hover {
+    background: v.$table-row-hover;
+  }
+}
+
+// Formularios dentro de módulos
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1rem 0;
+
+  input, select, button {
+    padding: 0.5rem;
+    border-radius: v.$border-radius;
+    border: 1px solid v.$input-border;
+    background: v.$input-bg;
+    color: v.$input-text;
+  }
+
+  input::placeholder, select::placeholder {
+    color: v.$input-placeholder;
+  }
+
+  button {
+    background: v.$color-btn-bg;
+    color: v.$color-btn-text;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+
+    &:hover {
+      background: v.$color-btn-hover;
+    }
+  }
+}
+
+// Estados / indicadores
+.estado {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: v.$border-radius;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+
+  &.pendiente { background: v.$estado-pendiente; }
+  &.en-proceso { background: v.$estado-en-proceso; }
+  &.finalizado { background: v.$estado-finalizado; }
+  &.entregado { background: v.$estado-entregado; }
+}
+
+// Títulos de módulo
+h2, h3 {
+  color: v.$color-text;
+  margin-bottom: 1rem;
+}

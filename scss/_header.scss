@@ -1,0 +1,63 @@
+@use 'variables';
+
+header {
+  // Eliminamos padding y display flex porque Bootstrap ya maneja esto
+  background: variables.$color-header-bg;
+  color: variables.$color-header-text;
+  box-shadow: variables.$shadow;
+
+  .navbar {
+    // Podemos sobrescribir colores y altura
+    padding: 0.5rem 2rem;
+
+    .navbar-brand {
+      display: flex;
+      flex-direction: column;
+      span {
+        font-size: 0.85rem;
+        color: variables.$color-muted;
+      }
+    }
+
+    .nav-link {
+      color: variables.$color-text !important;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: variables.$border-radius;
+      transition: background 0.3s, color 0.3s;
+
+      &:hover {
+        background: variables.$color-nav-hover;
+        color: variables.$color-header-text !important;
+      }
+    }
+
+    .navbar-toggler {
+      border: none;
+      color: variables.$color-text;
+      &:hover {
+        color: variables.$color-btn-hover;
+      }
+    }
+
+    .collapse.navbar-collapse {
+      // Opcional: fondo del menú desplegable en móvil
+      background: variables.$color-header-bg;
+      border-radius: variables.$border-radius;
+      padding: 0.5rem 0;
+    }
+  }
+
+  // Ajustes responsivos (Bootstrap ya maneja el colapso, pero podemos agregar estilos extra)
+  @media (max-width: 768px) {
+    .navbar-nav {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .nav-link {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
